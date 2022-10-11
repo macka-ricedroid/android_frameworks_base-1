@@ -179,7 +179,7 @@ public class UdfpsController implements DozeReceiver {
     private boolean mOnFingerDown;
     private boolean mAttemptedToDismissKeyguard;
     private final Set<Callback> mCallbacks = new HashSet<>();
-    private final int mUdfpsVendorCode;
+    private int mUdfpsVendorCode;
 
     private boolean mNightModeActive;
     private int mAutoModeState;
@@ -278,19 +278,10 @@ public class UdfpsController implements DozeReceiver {
                 if (!acquiredVendor || (!mStatusBarStateController.isDozing() && mScreenOn)) {
                     return;
                 }
-                final boolean isAodEnabled = mAmbientDisplayConfiguration.alwaysOnEnabled(UserHandle.USER_CURRENT);
-                final boolean isShowingAmbientDisplay = mStatusBarStateController.isDozing() && mScreenOn;
-                if (acquiredInfo == 6 && ((mScreenOffFod && !mScreenOn) || (isAodEnabled && isShowingAmbientDisplay))) {
-                    if (vendorCode == mUdfpsVendorCode) {
-                        if (mContext.getResources().getBoolean(R.bool.config_pulseOnFingerDown)) {
-                            mContext.sendBroadcastAsUser(new Intent(PULSE_ACTION),
+                if (vendorCode == 22) {
+                    mContext.sendBroadcastAsUser(new Intent(PULSE_ACTION),
                                     new UserHandle(UserHandle.USER_CURRENT));
-                        } else {
-                            mPowerManager.wakeUp(mSystemClock.uptimeMillis(),
-                                    PowerManager.WAKE_REASON_GESTURE, TAG);
-                        }
-                        onAodInterrupt(0, 0, 0, 0);
-                    }
+                    onAodInterrupt(0, 0, 0, 0);
                 }
             }
         }
